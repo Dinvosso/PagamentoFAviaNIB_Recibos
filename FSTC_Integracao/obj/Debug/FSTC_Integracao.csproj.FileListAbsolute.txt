@@ -1,0 +1,11 @@
+C:\Users\dinvosso\source\repos\FSTC_Integracao\bin\Debug\FSTC_Integracao.dll
+C:\Users\dinvosso\source\repos\FSTC_Integracao\bin\Debug\FSTC_Integracao.pdb
+C:\Users\dinvosso\source\repos\FSTC_Integracao\obj\Debug\FSTC_Integracao.csproj.AssemblyReference.cache
+C:\Users\dinvosso\source\repos\FSTC_Integracao\obj\Debug\FSTC_Integracao.csproj.CoreCompileInputs.cache
+C:\Users\dinvosso\source\repos\FSTC_Integracao\obj\Debug\FSTC_Integracao.dll
+C:\Users\dinvosso\source\repos\FSTC_Integracao\obj\Debug\FSTC_Integracao.pdb
+C:\DESENVOLVIMENTOS\GITHUB\ImportaPgtoFAs\FSTC_Integracao\bin\Debug\FSTC_Integracao.dll
+C:\DESENVOLVIMENTOS\GITHUB\ImportaPgtoFAs\FSTC_Integracao\bin\Debug\FSTC_Integracao.pdb
+C:\DESENVOLVIMENTOS\GITHUB\ImportaPgtoFAs\FSTC_Integracao\obj\Debug\FSTC_Integracao.csproj.CoreCompileInputs.cache
+C:\DESENVOLVIMENTOS\GITHUB\ImportaPgtoFAs\FSTC_Integracao\obj\Debug\FSTC_Integracao.dll
+C:\DESENVOLVIMENTOS\GITHUB\ImportaPgtoFAs\FSTC_Integracao\obj\Debug\FSTC_Integracao.pdb
