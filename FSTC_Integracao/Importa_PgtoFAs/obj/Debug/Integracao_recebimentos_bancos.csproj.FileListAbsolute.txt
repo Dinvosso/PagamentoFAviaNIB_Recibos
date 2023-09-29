@@ -5,3 +5,11 @@ C:\DESENVOLVIMENTOS\GITHUB\ImportaPgtoFAs\FSTC_Integracao\Importa_PgtoFAs\obj\De
 C:\DESENVOLVIMENTOS\GITHUB\ImportaPgtoFAs\FSTC_Integracao\Importa_PgtoFAs\obj\Debug\Integracao_recebimentos_bancos.csproj.CoreCompileInputs.cache
 C:\DESENVOLVIMENTOS\GITHUB\ImportaPgtoFAs\FSTC_Integracao\Importa_PgtoFAs\obj\Debug\Integracao_recebimentos_bancos.exe
 C:\DESENVOLVIMENTOS\GITHUB\ImportaPgtoFAs\FSTC_Integracao\Importa_PgtoFAs\obj\Debug\Integracao_recebimentos_bancos.pdb
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\bin\Debug\Integracao_recebimentos_bancos.exe.config
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\bin\Debug\Integracao_recebimentos_bancos.exe
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\bin\Debug\Integracao_recebimentos_bancos.pdb
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\obj\Debug\Integracao_recebimentos_bancos.exe.config
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\obj\Debug\Integracao_recebimentos_bancos.csproj.CoreCompileInputs.cache
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\obj\Debug\Integracao_recebimentos_bancos.exe
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\obj\Debug\Integracao_recebimentos_bancos.pdb
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\obj\Debug\Integracao_recebimentos_bancos.csproj.AssemblyReference.cache

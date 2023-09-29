@@ -433,8 +433,6 @@ namespace Integracao_recebimentos_bancos
                                 bool valida = validaImportacao(Nomeficheiro);
                                 if (valida)
                                 {
-                                    //escreveLog(logFolder, "ConsultaPendente", codCliente + " " + montante.ToString());
-                                    //efectua o pagamento da fatura via Nib
                                     FazPgtoNIB(dataP, nib, pgtoReferenciaOperacao, montante, numContaPrimavera, Nomeficheiro);
                                 }
                             }
@@ -485,6 +483,7 @@ namespace Integracao_recebimentos_bancos
                 double valor = 0;
                 int numdoc = 0;
                 bool resultTestouraria = false;
+                DataTable dtEA=new DataTable();
                 //VAI BUSCAR A RÚBRICA A USAR NO LANÇAMENTO DE TAXAS NA TESOURARIA
                 strRubrica = GetParameter("RubricaTes");
                 strDocLiquidacao = GetParameter("DocumentoLiq");
@@ -497,7 +496,7 @@ namespace Integracao_recebimentos_bancos
                         p.IdHistorico,p.Filial, p.Modulo,p.TipoDoc,p.Serie,NumdocInt,
                         NumPrestacao,NumTransferencia from Pendentes p with(nolock)
 		                left join clientes c on c.Cliente=p.Entidade						
-	                    where c.cdu_nib='{0}'", nib
+	                    where c.cdu_nib='{0}' and p.TipoDoc not in('ADC','VEC')", nib
                 );
 
                 dt = ConsultaSQLDatatable(strSql);
@@ -505,23 +504,13 @@ namespace Integracao_recebimentos_bancos
                 {
                     try
                     {
-                        if (DaString(dr["TipoDoc"])!="ADC")
-                        {
-                            //pega o objecto pendente do documento
-                            CctBEPendente _pendente = PriEngine.Engine.PagamentosRecebimentos.Pendentes.EditaID(dr["IdHistorico"].ToString());
+                        //pega o objecto pendente do documento
+                        CctBEPendente _pendente = PriEngine.Engine.PagamentosRecebimentos.Pendentes.EditaID(dr["IdHistorico"].ToString());
 
-                            //strTipoEntidade = DaString(dr["TipoEntidade"]);
-                            strEntidade = DaString(dr["Entidade"]);
+                        //strTipoEntidade = DaString(dr["TipoEntidade"]);
+                        strEntidade = DaString(dr["Entidade"]);
 
-                            //strFilial = DaString(dr["Filial"]);
-                            //strModulo = DaString(dr["Modulo"]);
-                            //strTipoDoc = DaString(dr["TipoDoc"]);
-                            //strSerie = DaString(dr["Serie"]);
-
-                            //numdocInt = Convert.ToInt32(dr["NumdocInt"]);
-
-                            AdicionaLinhasLiquidacao(strDocLiquidacao, strContaBanco, strRubrica, strEntidade, nib, referenciaOperacao, dr, ref _docLiq, ref valorTotal);
-                        }
+                        AdicionaLinhasLiquidacao(strDocLiquidacao, strContaBanco, strRubrica, strEntidade, nib, referenciaOperacao, dr, dt, ref _docLiq, ref valorTotal);
                     }
                     catch (Exception ex)
                     {
@@ -532,8 +521,9 @@ namespace Integracao_recebimentos_bancos
                 //caso ja nao haja mais pendente do cliente principal, selecciona o pendente da entidade associada para liquidar
                 if (valorTotal > 0)
                 {
-                    try
+                    try               
                     {
+                        int i = 0;
                         if (strEntidade != "")
                         {
                             strSql = string.Format(
@@ -542,13 +532,13 @@ namespace Integracao_recebimentos_bancos
                         from Pendentes p with(nolock)
 		                left join clientes c on c.Cliente=p.Entidade						
 	                    left join EntidadesAssociadas EA on c.Cliente=EA.EntidadeAssociada
-						where EA.Entidade='{0}'", strEntidade
+						where EA.Entidade='{0}' and p.TipoDoc not in('ADC','VEC')", strEntidade
                              );
-
-                            DataTable dtEA = ConsultaSQLDatatable(strSql);
+                            
+                             dtEA = ConsultaSQLDatatable(strSql);// entidade associada
                             foreach (DataRow drEA in dtEA.Rows)
                             {
-                                AdicionaLinhasLiquidacao(strDocLiquidacao, strContaBanco, strRubrica, strEntidade, nib, referenciaOperacao, drEA, ref _docLiq, ref valorTotal);
+                                AdicionaLinhasLiquidacao(strDocLiquidacao, strContaBanco, strRubrica, strEntidade, nib, referenciaOperacao, drEA, dtEA, ref _docLiq, ref valorTotal, true);
                             }
                         }
 
@@ -558,10 +548,15 @@ namespace Integracao_recebimentos_bancos
                         escreveErro(errorFolder, "AdicionaPendenteEntAssoc", nib + "- " + ex.Message);
                     }
                 }
+                if (valorTotal > 0 && _docLiq != null)
+                {
+                    //Adiciona o valor escesso                 
+                    PriEngine.Engine.PagamentosRecebimentos.Liquidacoes.AdicionaValorExcesso(_docLiq, "VEC",0,valorTotal,"");
+                    _docLiq.ValorRec = montante;
+                }
 
                 if (_docLiq != null)
                 {
-
                     PriEngine.Engine.PagamentosRecebimentos.Liquidacoes.Actualiza(_docLiq);
 
                     PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(_docLiq.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(_docLiq.NumDoc),
@@ -570,7 +565,7 @@ namespace Integracao_recebimentos_bancos
                     PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(_docLiq.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(_docLiq.NumDoc),
                      1, 1, "cdu_NomeFichPgto", nomeFich);
 
-                    escreveLog(logFolder, "NibPago", string.Format("O Nib {0} do Cliente {4} gerou o documento {1} {2}/{3} ",
+                    escreveLog(logFolder, "Sucesso", string.Format("O Nib {0} do Cliente {4} gerou o documento {1} {2}/{3} ",
                         nib, _docLiq.Tipodoc, _docLiq.NumDoc, _docLiq.Serie,
                         _docLiq.Entidade));
 
@@ -594,29 +589,6 @@ namespace Integracao_recebimentos_bancos
 
                 }
 
-                if (valorTotal > 0 && importado && _docLiq.Tipodoc!="VEC")
-                {
-
-                    CctBEPendente objAdiantamento = new CctBEPendente();
-
-                    var resultAdiantamento = CriaDocumentoAdiantamento(objAdiantamento, strTipoEntidade, strEntidade, strDocAdiantamento, dataPgto, valorTotal,
-                        referenciaOperacao);
-
-                    escreveLog(logFolder, "CriaAdiantamento", string.Format("A referencia {0} do cliente {4} gerou o documento {1} {2}/{3} ",
-                        nib, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie,
-                        objAdiantamento.Entidade));
-
-                    if (resultAdiantamento)
-                    {
-                        strMovimentoBancario = GetParameter("RubricaTaxas");
-                        resultTestouraria = GravaLigacaoBancos(objAdiantamento.TipoEntidade, objAdiantamento.Entidade, objAdiantamento.Moeda,
-                       objAdiantamento.ValorTotal > 0 ? objAdiantamento.ValorTotal : objAdiantamento.ValorTotal * -1,
-                       objAdiantamento.DataDoc, objAdiantamento.IDHistorico,
-                           nib, strDocTesouraria, strContaBanco, strMovimentoBancario);
-                    }
-
-                }
-
             }
             catch (Exception ex)
             {
@@ -625,7 +597,7 @@ namespace Integracao_recebimentos_bancos
             }
         }
 
-        private void AdicionaLinhasLiquidacao(string strDocLiquidacao, string strContaBanco, string strRubrica, string entidade, string nib, string referenciaOperacao, DataRow dr, ref CctBEDocumentoLiq _docLiq, ref double valorTotal)
+        private void AdicionaLinhasLiquidacao(string strDocLiquidacao, string strContaBanco, string strRubrica, string entidade, string nib, string referenciaOperacao, DataRow dr,DataTable dt, ref CctBEDocumentoLiq _docLiq, ref double valorTotal,bool entAssociada=false)
         {
             try
             {
@@ -635,6 +607,8 @@ namespace Integracao_recebimentos_bancos
                 string tipoDoc = DaString(dr["TipoDoc"]);
                 Int32 numdoc = DaInt32(dr["NumdocInt"]);
                 string serie = DaString(dr["Serie"]);
+                int numPrestacao;
+                int numTransferencia;
 
                 double valor = 0;
                 //verifica se existe documento
@@ -652,7 +626,8 @@ namespace Integracao_recebimentos_bancos
                     strModulo = DaString(dr["Modulo"]);
                     strTipoDoc = DaString(dr["TipoDoc"]);
                     strSerie = DaString(dr["Serie"]);
-
+                     //numPrestacao = Convert.ToInt16(dr["NumPrestacao"]);
+                     //numTransferencia = Convert.ToInt16(dr["NumTransferencia"]);
                     numdocInt = Convert.ToInt32(dr["NumdocInt"]);
 
                     if (_docLiq == null)
@@ -667,6 +642,7 @@ namespace Integracao_recebimentos_bancos
                     else
                     {
                         valor = _pendente.ValorPendente;
+
                     }
                     if (valor > 0)
                     {
@@ -689,7 +665,6 @@ namespace Integracao_recebimentos_bancos
                 throw ex;
             }
         }
-
         private bool validaImportacao(string nomeFicheiro)
         {
             bool valida = false;

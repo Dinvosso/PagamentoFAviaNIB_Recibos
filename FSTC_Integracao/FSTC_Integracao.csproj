@@ -49,8 +49,38 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Primavera.Extensibility.Attributes">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\Primavera.Extensibility.Attributes.dll</HintPath>
+    </Reference>
+    <Reference Include="Primavera.Extensibility.Base">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\Primavera.Extensibility.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="Primavera.Extensibility.BusinessEntities">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\Primavera.Extensibility.BusinessEntities.dll</HintPath>
+    </Reference>
+    <Reference Include="Primavera.Extensibility.CustomCode">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\Primavera.Extensibility.CustomCode.dll</HintPath>
+    </Reference>
+    <Reference Include="Primavera.Extensibility.Engine">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\Primavera.Extensibility.Engine.dll</HintPath>
+    </Reference>
+    <Reference Include="Primavera.Extensibility.HumanResources">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\Primavera.Extensibility.HumanResources.dll</HintPath>
+    </Reference>
+    <Reference Include="Primavera.Extensibility.Integration">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\Primavera.Extensibility.Integration.dll</HintPath>
+    </Reference>
+    <Reference Include="Primavera.Extensibility.Patterns">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\Primavera.Extensibility.Patterns.dll</HintPath>
+    </Reference>
+    <Reference Include="Primavera.Extensibility.TechnicalServices">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\APL\Primavera.Extensibility.TechnicalServices.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Linq" />
+    <Reference Include="System.Threading.Tasks" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="ClsServTec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
