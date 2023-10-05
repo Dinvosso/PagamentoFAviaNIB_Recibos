@@ -1,0 +1,6 @@
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\obj\Release\FSTC_Integracao.csproj.AssemblyReference.cache
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\obj\Release\FSTC_Integracao.csproj.CoreCompileInputs.cache
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\bin\Release\FSTC_Integracao.dll
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\bin\Release\FSTC_Integracao.pdb
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\obj\Release\FSTC_Integracao.dll
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\obj\Release\FSTC_Integracao.pdb
