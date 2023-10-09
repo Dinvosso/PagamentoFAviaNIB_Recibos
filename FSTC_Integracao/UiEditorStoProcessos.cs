@@ -53,10 +53,10 @@ namespace FSTC_Integracao
                     query = String.Format(@"select t.Tecnico,t.CDU_Entidade,descricaoresp,duracao,AI.Artigo,A.ArmazemSugestao,A.UnidadeBase,A.LocalizacaoSugestao,A.Iva,Iva.taxa, Datahorafecho from STP_Processos p
                         left join  STP_Intervencoes I on p.id=i.ProcessoID
                         left join STP_Tecnicos T on T.Tecnico=I.Tecnico
-                        inner join STP_ArtigosIntervencao AI on AI.IntervencaoID=I.ID
+                        left join STP_ArtigosIntervencao AI on AI.IntervencaoID=I.ID
                         left join Artigo a on a.Artigo=AI.Artigo
                         left join Iva on Iva.IVA=A.Iva
-                        where processoID in
+                        where T.CDU_TecExterno=1 and processoID in
                         (select id from STP_Processos where tipodoc='{0}' and serie='{1}' and numProcesso={2} and Datahorafecho is not null)
                         ", TipoDoc, Serie, Numero);
                     
