@@ -604,7 +604,6 @@ namespace Integracao_recebimentos_bancos
                                     _docLiq.ValorRec > 0 ? _docLiq.ValorRec : _docLiq.ValorRec * -1,
                                     _docLiq.DataDoc, _docLiq.ID,
                                     nib, strDocTesouraria, strContaBanco, strRubrica);
-
                     }
                 }
                 else
@@ -624,22 +623,46 @@ namespace Integracao_recebimentos_bancos
 
                         if (resultAdiantamento)
                         {
+                            try
+                            {
+                                //PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(objAdiantamento.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(objAdiantamento.NumDoc),
+                                //    1, 1, "cdu_NrTransacao", referenciaOperacao);
 
-                            PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(objAdiantamento.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(objAdiantamento.NumDoc),
-                                1, 1, "cdu_NrTransacao", referenciaOperacao);
+                                //PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(objAdiantamento.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(objAdiantamento.NumDoc),
+                                // 1, 1, "cdu_NomeFichPgto", nomeFich);
 
-                            PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(objAdiantamento.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(objAdiantamento.NumDoc),
-                             1, 1, "cdu_NomeFichPgto", nomeFich);
+                                //escreveLog(logFolder, "Sucesso", string.Format("O Nib {0} do Cliente {4} gerou o documento {1} {2}/{3} ",
+                                //    nib, _docLiq.Tipodoc, _docLiq.NumDoc, _docLiq.Serie,
+                                //    _docLiq.Entidade));
 
-                            escreveLog(logFolder, "Sucesso", string.Format("O Nib {0} do Cliente {4} gerou o documento {1} {2}/{3} ",
-                                nib, _docLiq.Tipodoc, _docLiq.NumDoc, _docLiq.Serie,
-                                _docLiq.Entidade));
+                               // strMovimentoBancario = GetParameter("RubricaTaxas");
+                                resultTestouraria = GravaLigacaoBancos(objAdiantamento.TipoEntidade, objAdiantamento.Entidade, objAdiantamento.Moeda,
+                               objAdiantamento.ValorTotal > 0 ? objAdiantamento.ValorTotal : objAdiantamento.ValorTotal * -1,
+                               objAdiantamento.DataDoc, objAdiantamento.IDHistorico,
+                                   nib, strDocTesouraria, strContaBanco, strRubrica);
 
-                            strMovimentoBancario = GetParameter("RubricaTaxas");
-                            resultTestouraria = GravaLigacaoBancos(objAdiantamento.TipoEntidade, objAdiantamento.Entidade, objAdiantamento.Moeda,
-                           objAdiantamento.ValorTotal > 0 ? objAdiantamento.ValorTotal : objAdiantamento.ValorTotal * -1,
-                           objAdiantamento.DataDoc, objAdiantamento.IDHistorico,
-                               nib, strDocTesouraria, strContaBanco, strMovimentoBancario);
+                                //actualiza a tdu_tautomatismo
+                                string query = String.Format(@"
+                               update TDU_TAutomatismos set cdu_Documento='{0}/{1}/{2}',CDU_DataProc='{3}' 
+                                where cdu_Nomeficheiro='{4}'", objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie, objAdiantamento.DataDoc.ToString("yyyy-MM-dd HH:mm:ss"), nomeFich);
+                                ExecutaQuery(query);
+
+                                //actualiza historico
+                                query = String.Format(@"
+                               update histórico set cdu_NrTransacao='{0}',cdu_NomeFichPgto='{1}' 
+                                where tipodoc='{2}' and numdocint={3} and serie='{4}'", referenciaOperacao, nomeFich, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie);
+                                ExecutaQuery(query);
+
+                                //escreveLog(logFolder, "ActualizaTAuto_Adiantamento", string.Format("Update documento {1} {2}/{3} ",
+                                //    nib, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie,
+                                //    objAdiantamento.Entidade));
+                            }
+                            catch (Exception ex)
+                            {
+
+                                escreveErro(errorFolder, "ActualizaAdiantamento", nib + " - " + ex.Message); 
+                            }
+                            
                         }
 
                     }
@@ -710,7 +733,8 @@ namespace Integracao_recebimentos_bancos
 
                         PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(objAdiantamento.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(objAdiantamento.NumDoc),
                          1, 1, "cdu_NomeFichPgto", nomeFich);
-                        strMovimentoBancario = GetParameter("RubricaTaxas");
+                        strMovimentoBancario = GetParameter("RubricaTes");
+                      
                         resultTestouraria = GravaLigacaoBancos(objAdiantamento.TipoEntidade, objAdiantamento.Entidade, objAdiantamento.Moeda,
                        objAdiantamento.ValorTotal > 0 ? objAdiantamento.ValorTotal : objAdiantamento.ValorTotal * -1,
                        objAdiantamento.DataDoc, objAdiantamento.IDHistorico,
@@ -1035,7 +1059,7 @@ namespace Integracao_recebimentos_bancos
             catch (Exception ex)
             {
                 escreveLog(referenciaOperacaoBIM, "<CriaDocumentoAdiantamento>_" + ex.Message);
-                throw ex;
+                return false;
             }
 
 
