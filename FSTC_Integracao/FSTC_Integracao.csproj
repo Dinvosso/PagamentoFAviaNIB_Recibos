@@ -73,6 +73,10 @@
       <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\ICmpBS100.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="IStpBS100">
+      <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\IStpBS100.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="Primavera.Extensibility.Attributes">
       <HintPath>..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\Primavera.Extensibility.Attributes.dll</HintPath>

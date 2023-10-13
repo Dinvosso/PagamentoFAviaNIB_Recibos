@@ -470,7 +470,7 @@ namespace Integracao_recebimentos_bancos
             }
         }
 
-        private void FazPgtoNIB(DateTime dataPgto, string nib, string referenciaOperacao, double montante, string contaBancaria, string nomeFich,String codClient)
+        private void FazPgtoNIB(DateTime dataPgto, string nib, string referenciaOperacao, double montante, string contaBancaria, string nomeFich,string codClient)
         {
             try
             {
@@ -608,65 +608,157 @@ namespace Integracao_recebimentos_bancos
                 }
                 else
                 {
-                    //caso nao exista nehum pendente, cria um adiantamento do cliente
-
-                    if (montante > 0)
+                    try
                     {
-                        CctBEPendente objAdiantamento = new CctBEPendente();
+                        strSql = string.Format(
+                                                    @"select p.Entidade,p.TipoEntidade,
+                                p.IdHistorico,p.Filial, p.Modulo,p.TipoDoc,p.Serie,p.NumdocInt
+                                from Pendentes p with(nolock)
+		                        left join clientes c on c.Cliente=p.Entidade	
+	                            left join EntidadesAssociadas EA on c.Cliente=EA.EntidadeAssociada
+						        left join clientes cca on cca.cliente=ea.EntidadeAssociada
+						        where EA.Entidade='{0}' and cca.CDU_FacturacaoAgrupada=1 and  p.TipoDoc not in('ADC','VEC')", codClient);
 
-                        var resultAdiantamento = CriaDocumentoAdiantamento(objAdiantamento, strTipoEntidade, codClient, strDocAdiantamento, dataPgto, valorTotal,
-                            referenciaOperacao);
-
-                        escreveLog(logFolder, "CriaAdiantamento", string.Format("A referencia {0} do cliente {4} gerou o documento {1} {2}/{3} ",
-                            nib, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie,
-                            objAdiantamento.Entidade));
-
-                        if (resultAdiantamento)
+                        dtEA = ConsultaSQLDatatable(strSql);// entidade associada
+                        if (dtEA.Rows.Count > 0)
                         {
-                            try
+                            foreach (DataRow drEA in dtEA.Rows)
                             {
-                                //PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(objAdiantamento.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(objAdiantamento.NumDoc),
-                                //    1, 1, "cdu_NrTransacao", referenciaOperacao);
+                                AdicionaLinhasLiquidacao(strDocLiquidacao, strContaBanco, strRubrica, codClient, nib, referenciaOperacao, drEA, dtEA, ref _docLiq, ref valorTotal, true);
+                            }
 
-                                //PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(objAdiantamento.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(objAdiantamento.NumDoc),
-                                // 1, 1, "cdu_NomeFichPgto", nomeFich);
+                            if (valorTotal > 0 && _docLiq != null)
+                            {
+                                //Adiciona o valor escesso                 
+                                PriEngine.Engine.PagamentosRecebimentos.Liquidacoes.AdicionaValorExcesso(_docLiq, "VEC", 0, valorTotal, referenciaOperacao);
+                                _docLiq.ValorRec = montante;
+                            }
 
-                                //escreveLog(logFolder, "Sucesso", string.Format("O Nib {0} do Cliente {4} gerou o documento {1} {2}/{3} ",
-                                //    nib, _docLiq.Tipodoc, _docLiq.NumDoc, _docLiq.Serie,
-                                //    _docLiq.Entidade));
+                            if (_docLiq != null)
+                            {
+                                PriEngine.Engine.PagamentosRecebimentos.Liquidacoes.Actualiza(_docLiq);
 
-                               // strMovimentoBancario = GetParameter("RubricaTaxas");
-                                resultTestouraria = GravaLigacaoBancos(objAdiantamento.TipoEntidade, objAdiantamento.Entidade, objAdiantamento.Moeda,
-                               objAdiantamento.ValorTotal > 0 ? objAdiantamento.ValorTotal : objAdiantamento.ValorTotal * -1,
-                               objAdiantamento.DataDoc, objAdiantamento.IDHistorico,
-                                   nib, strDocTesouraria, strContaBanco, strRubrica);
+                                PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(_docLiq.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(_docLiq.NumDoc),
+                                    1, 1, "cdu_NrTransacao", referenciaOperacao);
+
+                                PriEngine.Engine.PagamentosRecebimentos.Historico.ActualizaValorAtributo(_docLiq.Tipodoc, "M", _docLiq.Serie, "000", Convert.ToInt32(_docLiq.NumDoc),
+                                 1, 1, "cdu_NomeFichPgto", nomeFich);
+
+                                escreveLog(logFolder, "Sucesso", string.Format("O Nib {0} do Cliente {4} gerou o documento {1} {2}/{3} ",
+                                    nib, _docLiq.Tipodoc, _docLiq.NumDoc, _docLiq.Serie,
+                                    _docLiq.Entidade));
+
+                                importado = true;
+                                if (_docLiq.ValorRec < 0)
+                                    _docLiq.ValorRec = _docLiq.ValorRec * (-1);
 
                                 //actualiza a tdu_tautomatismo
                                 string query = String.Format(@"
+                           update TDU_TAutomatismos set cdu_Documento='{0}/{1}/{2}',CDU_DataProc='{3}' 
+                            where cdu_Nomeficheiro='{4}'", _docLiq.Tipodoc, _docLiq.NumDoc, _docLiq.Serie, _docLiq.DataDoc.ToString("yyyy-MM-dd HH:mm:ss"), nomeFich);
+
+                                ExecutaQuery(query);
+
+                                //grava ligacao a bancos
+                                resultTestouraria = GravaLigacaoBancos(
+                                            _docLiq.TipoEntidade, _docLiq.Entidade, _docLiq.Moeda,
+                                            _docLiq.ValorRec > 0 ? _docLiq.ValorRec : _docLiq.ValorRec * -1,
+                                            _docLiq.DataDoc, _docLiq.ID,
+                                            nib, strDocTesouraria, strContaBanco, strRubrica);
+                            }
+
+                            //caso liquida pendente ent associada e sobra o valor, cria o adiantamento
+                            if (valorTotal > 0)
+                            {
+                                CctBEPendente objAdiantamento = new CctBEPendente();
+
+                                var resultAdiantamento = CriaDocumentoAdiantamento(objAdiantamento, strTipoEntidade, codClient, strDocAdiantamento, dataPgto, valorTotal,
+                                    referenciaOperacao);
+
+                                escreveLog(logFolder, "CriaAdiantamento", string.Format("A referencia {0} do cliente {4} gerou o documento {1} {2}/{3} ",
+                                    nib, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie,
+                                    objAdiantamento.Entidade));
+
+                                if (resultAdiantamento)
+                                {
+                                    try
+                                    {
+                                        resultTestouraria = GravaLigacaoBancos(objAdiantamento.TipoEntidade, objAdiantamento.Entidade, objAdiantamento.Moeda,
+                                       objAdiantamento.ValorTotal > 0 ? objAdiantamento.ValorTotal : objAdiantamento.ValorTotal * -1,
+                                       objAdiantamento.DataDoc, objAdiantamento.IDHistorico,
+                                           nib, strDocTesouraria, strContaBanco, strRubrica);
+
+                                        //actualiza a tdu_tautomatismo
+                                        string query = String.Format(@"
                                update TDU_TAutomatismos set cdu_Documento='{0}/{1}/{2}',CDU_DataProc='{3}' 
                                 where cdu_Nomeficheiro='{4}'", objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie, objAdiantamento.DataDoc.ToString("yyyy-MM-dd HH:mm:ss"), nomeFich);
-                                ExecutaQuery(query);
+                                        ExecutaQuery(query);
 
-                                //actualiza historico
-                                query = String.Format(@"
+                                        //actualiza historico
+                                        query = String.Format(@"
                                update histórico set cdu_NrTransacao='{0}',cdu_NomeFichPgto='{1}' 
                                 where tipodoc='{2}' and numdocint={3} and serie='{4}'", referenciaOperacao, nomeFich, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie);
-                                ExecutaQuery(query);
+                                        ExecutaQuery(query);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        escreveErro(errorFolder, "ActualizaAdiant", nib + " - " + ex.Message);
+                                    }
 
-                                //escreveLog(logFolder, "ActualizaTAuto_Adiantamento", string.Format("Update documento {1} {2}/{3} ",
-                                //    nib, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie,
-                                //    objAdiantamento.Entidade));
-                            }
-                            catch (Exception ex)
-                            {
+                                }
 
-                                escreveErro(errorFolder, "ActualizaAdiantamento", nib + " - " + ex.Message); 
                             }
-                            
                         }
+                        else
+                        {
+                            //caso nao exista nehum pendente, cria um adiantamento do cliente
+                            if (montante > 0)
+                            {
+                                CctBEPendente objAdiantamento = new CctBEPendente();
 
+                                var resultAdiantamento = CriaDocumentoAdiantamento(objAdiantamento, strTipoEntidade, codClient, strDocAdiantamento, dataPgto, valorTotal,
+                                    referenciaOperacao);
+
+                                escreveLog(logFolder, "CriaAdiantamento", string.Format("A referencia {0} do cliente {4} gerou o documento {1} {2}/{3} ",
+                                    nib, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie,
+                                    objAdiantamento.Entidade));
+
+                                if (resultAdiantamento)
+                                {
+                                    try
+                                    {
+                                        resultTestouraria = GravaLigacaoBancos(objAdiantamento.TipoEntidade, objAdiantamento.Entidade, objAdiantamento.Moeda,
+                                       objAdiantamento.ValorTotal > 0 ? objAdiantamento.ValorTotal : objAdiantamento.ValorTotal * -1,
+                                       objAdiantamento.DataDoc, objAdiantamento.IDHistorico,
+                                           nib, strDocTesouraria, strContaBanco, strRubrica);
+
+                                        //actualiza a tdu_tautomatismo
+                                        string query = String.Format(@"
+                               update TDU_TAutomatismos set cdu_Documento='{0}/{1}/{2}',CDU_DataProc='{3}' 
+                                where cdu_Nomeficheiro='{4}'", objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie, objAdiantamento.DataDoc.ToString("yyyy-MM-dd HH:mm:ss"), nomeFich);
+                                        ExecutaQuery(query);
+
+                                        //actualiza historico
+                                        query = String.Format(@"
+                               update histórico set cdu_NrTransacao='{0}',cdu_NomeFichPgto='{1}' 
+                                where tipodoc='{2}' and numdocint={3} and serie='{4}'", referenciaOperacao, nomeFich, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie);
+                                        ExecutaQuery(query);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        escreveErro(errorFolder, "ActAdiant", nib + " - " + ex.Message);
+                                    }
+
+                                }
+
+                            }
+                        }
                     }
+                    catch (Exception ex)
+                    {
 
+                        escreveErro(errorFolder, "pendEntAssoc", nib + "- " + ex.Message);
+                    }
                 }
 
             }

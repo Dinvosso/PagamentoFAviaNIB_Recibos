@@ -12,3 +12,4 @@ C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_Pgt
 C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\obj\Release\Integracao_recebimentos_bancos.csproj.CoreCompileInputs.cache
 C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\obj\Release\Integracao_recebimentos_bancos.exe
 C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\obj\Release\Integracao_recebimentos_bancos.pdb
+C:\DESENVOLVIMENTOS\GITHUB\PagamentoFAviaNIB_Recibos\FSTC_Integracao\Importa_PgtoFAs\obj\Release\Integracao_recebimentos_bancos.csproj.AssemblyReference.cache
