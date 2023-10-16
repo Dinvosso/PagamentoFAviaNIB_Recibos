@@ -48,11 +48,11 @@ namespace FSTC_Integracao.Services
                             _doc.Serie = bso.Base.Series.DaSerieDefeito("C", _doc.Tipodoc);
                             _doc.NumDocExterno = item.NumDocExterno;
                             _doc.TipoEntidade = "R";
-                            // _doc.CamposUtil["CDU_Ficheiro"].Valor = cdu_ficheiro;//dra.Name;
-                            _doc.CamposUtil["cdu_DocSTP"].Valor = item.Documento;
+                            //_doc.CamposUtil["CDU_Ficheiro"].Valor = cdu_ficheiro;//dra.Name;
+                          //_doc.CamposUtil["cdu_DocSTP"].Valor = item.Documento;
 
                             bso.Compras.Documentos.PreencheDadosRelacionados(_doc);
-                          //  _doc.Fluxo = "999";
+                            //_doc.Fluxo = "999";
                             _doc.Moeda = "MT";
                             _doc.DataDoc = Convert.ToDateTime(item.dataFecho);
                             _doc.DataVenc = Convert.ToDateTime(item.dataFecho);
@@ -99,6 +99,8 @@ namespace FSTC_Integracao.Services
         public double duracao { get; set; }
         public string Entidade { get; set; }
         public string Tipodoc { get; set; }
+        public DateTime DataHInic { get; set; }
+        public DateTime DataHFim { get; set; }
         public string NumDocExterno { get; set; }
         public string Iva { get; set; }
         public string Unidade { get; set; }

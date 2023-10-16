@@ -390,7 +390,6 @@ namespace Integracao_recebimentos_bancos
         {
             try
             {
-                //string entidade = GetParameter("Servicos_Entidade");
                 DataTable dtPendente;
                 string nib = "";
                 string pgtoReferenciaOperacao = "";
@@ -403,14 +402,12 @@ namespace Integracao_recebimentos_bancos
                 CultureInfo enUS = new CultureInfo("en-US");
                 DataTable dtP, dtCl;
                 int indexNib;
-                //Carrega a lista dos pagamentos na tabela automatisco
                 dtP = DaListaPagamentos();
 
                 foreach (DataRow dr in dtP.Rows)
                 {
                     try
                     {
-                        //Carrega os dados do pagamento
                         montante = DaDouble(dr["CDU_Valor"]);
                         nContaBancaria = DaString(dr["CDU_ContaBanc"]);
                         Nomeficheiro = DaString(dr["CDU_NomeFicheiro"]);
@@ -418,8 +415,6 @@ namespace Integracao_recebimentos_bancos
                         nib = DaString(dr["CDU_Ref"]);
                         indexNib = nib.IndexOf('/');
                         nib = nib.Substring(indexNib + 1);
-
-                        //Verifica se o nib do pagto está associado a uma ficha do cliente
                         nib = VerificaNib(nib);
 
                         if (nib.Length >0 )
@@ -499,7 +494,7 @@ namespace Integracao_recebimentos_bancos
                 int numdoc = 0;
                 bool resultTestouraria = false;
                 DataTable dtEA=new DataTable();
-                //VAI BUSCAR A RÚBRICA A USAR NO LANÇAMENTO DE TAXAS NA TESOURARIA
+
                 strRubrica = GetParameter("RubricaTes");
                 strDocLiquidacao = GetParameter("DocumentoLiq");
                 strDocTesouraria = GetParameter("DocTesouraria");
@@ -522,7 +517,6 @@ namespace Integracao_recebimentos_bancos
                     {
                         try
                         {
-                            //pega o objecto pendente do documento
                             CctBEPendente _pendente = PriEngine.Engine.PagamentosRecebimentos.Pendentes.EditaID(dr["IdHistorico"].ToString());
 
                             //strTipoEntidade = DaString(dr["TipoEntidade"]);
@@ -536,7 +530,7 @@ namespace Integracao_recebimentos_bancos
                         }
 
                     }
-                    //caso ja nao haja mais pendente do cliente principal, selecciona o pendente da entidade associada para liquidar
+
                     if (valorTotal > 0)
                     {
                         try
@@ -567,8 +561,7 @@ namespace Integracao_recebimentos_bancos
                         }
                     }
                     if (valorTotal > 0 && _docLiq != null)
-                    {
-                        //Adiciona o valor escesso                 
+                    {                 
                         PriEngine.Engine.PagamentosRecebimentos.Liquidacoes.AdicionaValorExcesso(_docLiq, "VEC", 0, valorTotal, referenciaOperacao);
                         _docLiq.ValorRec = montante;
                     }
@@ -628,8 +621,7 @@ namespace Integracao_recebimentos_bancos
                             }
 
                             if (valorTotal > 0 && _docLiq != null)
-                            {
-                                //Adiciona o valor escesso                 
+                            {                 
                                 PriEngine.Engine.PagamentosRecebimentos.Liquidacoes.AdicionaValorExcesso(_docLiq, "VEC", 0, valorTotal, referenciaOperacao);
                                 _docLiq.ValorRec = montante;
                             }
@@ -667,7 +659,6 @@ namespace Integracao_recebimentos_bancos
                                             nib, strDocTesouraria, strContaBanco, strRubrica);
                             }
 
-                            //caso liquida pendente ent associada e sobra o valor, cria o adiantamento
                             if (valorTotal > 0)
                             {
                                 CctBEPendente objAdiantamento = new CctBEPendente();
@@ -711,7 +702,6 @@ namespace Integracao_recebimentos_bancos
                         }
                         else
                         {
-                            //caso nao exista nehum pendente, cria um adiantamento do cliente
                             if (montante > 0)
                             {
                                 CctBEPendente objAdiantamento = new CctBEPendente();
@@ -732,13 +722,11 @@ namespace Integracao_recebimentos_bancos
                                        objAdiantamento.DataDoc, objAdiantamento.IDHistorico,
                                            nib, strDocTesouraria, strContaBanco, strRubrica);
 
-                                        //actualiza a tdu_tautomatismo
                                         string query = String.Format(@"
                                update TDU_TAutomatismos set cdu_Documento='{0}/{1}/{2}',CDU_DataProc='{3}' 
                                 where cdu_Nomeficheiro='{4}'", objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie, objAdiantamento.DataDoc.ToString("yyyy-MM-dd HH:mm:ss"), nomeFich);
                                         ExecutaQuery(query);
 
-                                        //actualiza historico
                                         query = String.Format(@"
                                update histórico set cdu_NrTransacao='{0}',cdu_NomeFichPgto='{1}' 
                                 where tipodoc='{2}' and numdocint={3} and serie='{4}'", referenciaOperacao, nomeFich, objAdiantamento.Tipodoc, objAdiantamento.NumDoc, objAdiantamento.Serie);
@@ -765,7 +753,6 @@ namespace Integracao_recebimentos_bancos
             catch (Exception ex)
             {
                 escreveErro(errorFolder, "FazPgtoNIB", nib + " - " + ex.Message);
-                //throw new Exception(string.Format("<FazPgtoNIB>_ {0} {1} ", referenciaOperacao, ex.Message));
             }
         }
        
@@ -978,7 +965,6 @@ namespace Integracao_recebimentos_bancos
             DataTable dt = new DataTable();
             try
             {
-                //Consulta faturas pendentes referente ao NIB em causa
                 dt = ConsultaSQLDatatable(string.Format(@"select cdu_nomeFicheiro,cdu_ref,cdu_contabanc,cdu_valor,CDU_Obs
                      from TDU_TAutomatismos with(nolock)
                         where CDU_Documento is null and cdu_DataProc is null"));
@@ -1024,7 +1010,6 @@ namespace Integracao_recebimentos_bancos
             string clienteNib = "";
             try
             {
-                //verifica se tem nib na ficha do cliente e pega codCliente
                 dt = ConsultaSQLDatatable(string.Format(@"select CDU_Nib from clientes c with(nolock)
                         where CDU_NIb='{0}'", nib));
 
@@ -1052,7 +1037,6 @@ namespace Integracao_recebimentos_bancos
             string numConta = "";
             try
             {
-                //pega nr de conta no primavera
                 dt = ConsultaSQLDatatable(string.Format(@"select conta from contasBancarias c with(nolock)
                         where numConta='{0}'", numcontaBancaria));
 
@@ -1063,7 +1047,6 @@ namespace Integracao_recebimentos_bancos
                 else
                 {
                     escreveLog(logFolder, "VerificaNcontaPrimavera", string.Format("O numero de conta bancária não está associado a nenhum numero de conta no Primavera! " + numcontaBancaria));
-                    //throw new Exception(string.Format("Deve associar um NIB ao cliente " + DaString(dt.Rows[0][0])));
                 }
                 return numConta;
 
@@ -1083,7 +1066,6 @@ namespace Integracao_recebimentos_bancos
             string cliente = "";
             try
             {
-                //verifica se tem nib na ficha do cliente e pega codCliente
                 dt = ConsultaSQLDatatable(string.Format(@"select cliente from clientes c with(nolock)
                         where CDU_NIb='{0}'", nib));
 

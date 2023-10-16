@@ -31,8 +31,6 @@ namespace Integracao_recebimentos_bancos.Engine
                 PriEngine.CreatContext(tipoPlataforma, empresa, utilizador, password);
 
                 cls = new GestaoPagamentoServicos(tipoPlataforma, empresa, utilizador, password);
-
-                //faz pagto da fatura atraves do NIB que consta na ficha do cliente
                 cls.ValidaPagamentoViaNIB();
 
                 // cls.Dispose();

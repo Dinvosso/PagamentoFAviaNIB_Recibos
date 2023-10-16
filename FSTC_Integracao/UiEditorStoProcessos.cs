@@ -50,13 +50,13 @@ namespace FSTC_Integracao
 
                 if (Fechado)
                 {
-                    query = String.Format(@"select t.Tecnico,t.CDU_Entidade,descricaoresp,duracao,AI.Artigo,A.ArmazemSugestao,A.UnidadeBase,A.LocalizacaoSugestao,A.Iva,Iva.taxa, Datahorafecho from STP_Processos p
+                    query = String.Format(@"select t.Tecnico,t.CDU_Entidade,descricaoresp,duracao,I.DataHoraInicio,I.DataHoraFim,AI.Artigo,A.ArmazemSugestao,A.UnidadeBase,A.LocalizacaoSugestao,A.Iva,Iva.taxa, Datahorafecho from STP_Processos p
                         left join  STP_Intervencoes I on p.id=i.ProcessoID
                         left join STP_Tecnicos T on T.Tecnico=I.Tecnico
                         left join STP_ArtigosIntervencao AI on AI.IntervencaoID=I.ID
                         left join Artigo a on a.Artigo=AI.Artigo
                         left join Iva on Iva.IVA=A.Iva
-                        where T.CDU_TecExterno=1 and processoID in
+                        where T.CDU_TecExterno=1 and cdu_entidade is not null and processoID in
                         (select id from STP_Processos where tipodoc='{0}' and serie='{1}' and numProcesso={2} and Datahorafecho is not null)
                         ", TipoDoc, Serie, Numero);
                     
@@ -71,15 +71,20 @@ namespace FSTC_Integracao
 
                             TecnicoHoraTrab tecnicoHora = new TecnicoHoraTrab();
                             duracao = Convert.ToDouble(dr["duracao"]);
-                            duracao = duracao / 60;
+                            //duracao = duracao / 60;
+                            tecnicoHora.DataHInic = Convert.ToDateTime(dr["DataHoraInicio"]);
+                            tecnicoHora.DataHFim = Convert.ToDateTime(dr["DataHoraFim"]);
+                            TimeSpan dif = tecnicoHora.DataHFim.Subtract(tecnicoHora.DataHInic);
+
                             taxaIva = Convert.ToDecimal(geral.GetParameter("TaxaIva"));
                             taxaIva = taxaIva / 100;
                             numdocExt = TipoDoc + "/" + Numero + "/" + Serie;
                             tecnicoHora.artigo = geral.GetParameter("ArtigoSTP");
                             tecnicoHora.dataFecho = geral.DaString(dr["Datahorafecho"]);
                             tecnicoHora.descricao = geral.DaString(dr["descricaoresp"]);
-                            tecnicoHora.duracao = duracao;
+                            tecnicoHora.duracao = dif.Minutes;
                             tecnicoHora.Entidade = geral.DaString(dr["CDU_Entidade"]);
+                            
                             tecnicoHora.NumDocExterno = numdocExt;
                             tecnicoHora.Tipodoc = tipodocTes;
                             tecnicoHora.ArmazemLocalizacao = geral.DaString(dr["LocalizacaoSugestao"]);

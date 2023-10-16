@@ -637,6 +637,7 @@ namespace FSTC_Integracao.Services
             }
         }
 
+
         public string DaString(object s)
         {
             if (s is DBNull)
