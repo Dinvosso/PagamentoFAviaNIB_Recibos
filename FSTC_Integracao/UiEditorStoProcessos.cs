@@ -43,12 +43,13 @@ namespace FSTC_Integracao
                 string query,numdocExt;
                 DataTable dt= new DataTable();
                 double duracao, duracaoHora;
-                decimal taxaIva;               
+                decimal taxaIva;    
+                string artigo = geral.GetParameter("ArtigoSTP");
                 string documento = TipoDoc + "/" + Convert.ToString(Numero) + "/" + Serie;
                 string tipodocTes = geral.GetParameter("DocSerTec");
                 List<TecnicoHoraTrab> listTecnicoHoraTrab = new List<TecnicoHoraTrab>();
 
-                if (Fechado)
+                if (Fechado && artigo!="")
                 {
                     query = String.Format(@"select t.Tecnico,t.CDU_Entidade,descricaoresp,duracao,I.DataHoraInicio,I.DataHoraFim,AI.Artigo,A.ArmazemSugestao,A.UnidadeBase,A.LocalizacaoSugestao,A.Iva,Iva.taxa, Datahorafecho from STP_Processos p
                         left join  STP_Intervencoes I on p.id=i.ProcessoID
@@ -56,9 +57,9 @@ namespace FSTC_Integracao
                         left join STP_ArtigosIntervencao AI on AI.IntervencaoID=I.ID
                         left join Artigo a on a.Artigo=AI.Artigo
                         left join Iva on Iva.IVA=A.Iva
-                        where T.CDU_TecExterno=1 and cdu_entidade is not null and processoID in
+                        where T.CDU_TecExterno=1 and cdu_entidade is not null and AI.ARTIGO='{3}' and processoID in
                         (select id from STP_Processos where tipodoc='{0}' and serie='{1}' and numProcesso={2} and Datahorafecho is not null)
-                        ", TipoDoc, Serie, Numero);
+                        ", TipoDoc, Serie, Numero,artigo);
                     
                     dt = BSO.ConsultaDataTable(query);
 
@@ -70,11 +71,13 @@ namespace FSTC_Integracao
                         {
 
                             TecnicoHoraTrab tecnicoHora = new TecnicoHoraTrab();
-                            duracao = Convert.ToDouble(dr["duracao"]);
+                            
                             //duracao = duracao / 60;
                             tecnicoHora.DataHInic = Convert.ToDateTime(dr["DataHoraInicio"]);
                             tecnicoHora.DataHFim = Convert.ToDateTime(dr["DataHoraFim"]);
                             TimeSpan dif = tecnicoHora.DataHFim.Subtract(tecnicoHora.DataHInic);
+                            duracao = Convert.ToDouble(dif.TotalMinutes);
+                            duracao = duracao / 60;
 
                             taxaIva = Convert.ToDecimal(geral.GetParameter("TaxaIva"));
                             taxaIva = taxaIva / 100;
@@ -82,7 +85,7 @@ namespace FSTC_Integracao
                             tecnicoHora.artigo = geral.GetParameter("ArtigoSTP");
                             tecnicoHora.dataFecho = geral.DaString(dr["Datahorafecho"]);
                             tecnicoHora.descricao = geral.DaString(dr["descricaoresp"]);
-                            tecnicoHora.duracao = dif.Minutes;
+                            tecnicoHora.duracao = duracao;
                             tecnicoHora.Entidade = geral.DaString(dr["CDU_Entidade"]);
                             
                             tecnicoHora.NumDocExterno = numdocExt;

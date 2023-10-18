@@ -52,7 +52,7 @@ namespace FSTC_Integracao.Services
                           //_doc.CamposUtil["cdu_DocSTP"].Valor = item.Documento;
 
                             bso.Compras.Documentos.PreencheDadosRelacionados(_doc);
-                            //_doc.Fluxo = "999";
+                           // _doc.Fluxo = "999";
                             _doc.Moeda = "MT";
                             _doc.DataDoc = Convert.ToDateTime(item.dataFecho);
                             _doc.DataVenc = Convert.ToDateTime(item.dataFecho);
